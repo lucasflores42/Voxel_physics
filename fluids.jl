@@ -10,13 +10,13 @@ mutable struct Particle
     density::Float64
     pressure::Float64
     mass::Float64
-    material::String
 end
 
 # -----------------------------------------------------------------------------
 #                           Initialization
 # -----------------------------------------------------------------------------
 function initialize_particles()
+
     particles = Vector{Particle}(undef, num_particles)
     
     for i in 1:num_particles
@@ -27,8 +27,7 @@ function initialize_particles()
             [0.0, 0.0, -10.0],  # acceleration
             1000.0,             # density
             0.0,                # pressure
-            1.0,                # mass
-            "water"             # material 
+            1.0                 # mass
         )
     end
     
@@ -136,7 +135,7 @@ function calculate_forces!(particles)
         particles[i].velocity .+= (Fi / particles[i].mass) .* dt
         particles[i].position .+= particles[i].velocity .* dt
 
-        @printf "Particle %d: Pos=(%.3f, %.3f, %.3f) Vel=(%.3f, %.3f, %.3f) Density=%.2f Pressure=%.2f Fi_pressure=(%.3f, %.3f, %.3f) Fi_viscosity=(%.3f, %.3f, %.3f)\n" i particles[i].position[1] particles[i].position[2] particles[i].position[3] particles[i].velocity[1] particles[i].velocity[2] particles[i].velocity[3] particles[i].density particles[i].pressure Fi_pressure[1] Fi_pressure[2] Fi_pressure[3] Fi_viscosity[1] Fi_viscosity[2] Fi_viscosity[3]
+        #@printf "Particle %d: Pos=(%.3f, %.3f, %.3f) Vel=(%.3f, %.3f, %.3f) Density=%.2f Pressure=%.2f Fi_pressure=(%.3f, %.3f, %.3f) Fi_viscosity=(%.3f, %.3f, %.3f)\n" i particles[i].position[1] particles[i].position[2] particles[i].position[3] particles[i].velocity[1] particles[i].velocity[2] particles[i].velocity[3] particles[i].density particles[i].pressure Fi_pressure[1] Fi_pressure[2] Fi_pressure[3] Fi_viscosity[1] Fi_viscosity[2] Fi_viscosity[3]
     end
 end
 
@@ -199,11 +198,12 @@ function visualize_sph(particles, step)
             xlim=(0, box_size),
             ylim=(0, box_size),
             zlim=(0, box_size),
-            title="SPH Simulation - Time $(round(step, digits=2))s",
+            title="Time $(round(step, digits=2))s",
             xlabel="X", ylabel="Y", zlabel="Z",
             legend=false,
-            camera=(30, 30))
-    
+            camera=(30, 30),
+            size=(500, 600)
+    )
     return plt
 end
 
@@ -224,6 +224,7 @@ const viscosity_coef = 0.2
 #                       Main Simulation
 # -----------------------------------------------------------------------------
 function main()
+
     particles = initialize_particles()
     
     t = 0.0
