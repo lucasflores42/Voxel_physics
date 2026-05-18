@@ -1,32 +1,19 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
 /// Handles rigid body integration, collisions, and boundary conditions.
-/// Mirrors Julia's dynamics.jl logic.
 /// Called each step by SimulationManager.
-/// </summary>
+
 public class PhysicsManager : MonoBehaviour
 {
-    // -----------------------------------------------------------------------
-    //  These are set by SimulationManager during Awake()
-    // -----------------------------------------------------------------------
-    public float boxSize;
-    public float damping;
-    public float dt;
-    public float gravityCoef;
-    public float collisionRestitution;
-
-    // -------------------------------------------------------------------------
+    
     //  Gravity wrapper (used by material calculators)
-    // -------------------------------------------------------------------------
     public Vector3 CalculateGravity(Vector3 position, float mass, int rigidBodyId,
                                     List<Particle> particles)
-        => SPHPhysics.CalculateGravity(position, mass, rigidBodyId, particles, gravityCoef);
+        => SPHPhysics.CalculateGravity(position, mass, rigidBodyId, particles, SimulationManager.gravityCoef);
 
-    // -------------------------------------------------------------------------
+
     //  Rigid body integration  (translation + rotation via Rodrigues)
-    // -------------------------------------------------------------------------
     public void UpdateRigidBodies(List<Particle> particles, List<RigidBodyData> rigidbodies)
     {
         foreach (RigidBodyData rb in rigidbodies)
@@ -38,12 +25,12 @@ public class PhysicsManager : MonoBehaviour
             Vector3 fGravity = CalculateGravity(rb.centerOfMass, M, rb.id, particles);
             Vector3 a = fGravity / M;
 
-            rb.velocity      += a * dt;
-            rb.centerOfMass  += rb.velocity * dt;
+            rb.velocity      += a * SimulationManager.dt;
+            rb.centerOfMass  += rb.velocity * SimulationManager.dt;
 
             // --- Rotate particles around new CM ---
             Vector3 omega = rb.angularVelocity;
-            float   theta = omega.magnitude * dt;
+            float   theta = omega.magnitude * SimulationManager.dt;
 
             foreach (int idx in rb.particleIndices)
             {
@@ -64,9 +51,6 @@ public class PhysicsManager : MonoBehaviour
         }
     }
 
-    // -------------------------------------------------------------------------
-    //  Collision detection & response  (all pairs)
-    // -------------------------------------------------------------------------
     public void CalculateCollisions(List<Particle> particles, List<RigidBodyData> rigidbodies)
     {
         for (int i = 0; i < particles.Count; i++)
@@ -104,7 +88,7 @@ public class PhysicsManager : MonoBehaviour
         Vector3 normal = (x1 - x2) / r;
         float overlap  = p1.radius + p2.radius - r;
         float totalMass = m1 + m2;
-        float cr = collisionRestitution;
+        float cr = SimulationManager.collisionRestitutionCoefficient;
         float contactR = p1.radius + p2.radius;
 
         Vector3 dv1 = -(1f + cr) * m2 / totalMass
@@ -132,7 +116,7 @@ public class PhysicsManager : MonoBehaviour
         Vector3 normal = (x1 - x2) / r;
         float overlap  = p1.radius + p2.radius - r;
         float contactR = p1.radius + p2.radius;
-        float cr = collisionRestitution;
+        float cr = SimulationManager.collisionRestitutionCoefficient;
 
         Vector3 dv1 = -(1f + cr) * m2 / (m1 + m2)
                       * Vector3.Dot(v1 - v2, x1 - x2) * (x1 - x2) / (contactR * contactR);
@@ -162,7 +146,7 @@ public class PhysicsManager : MonoBehaviour
         Vector3 normal = (x1 - x2) / r;
         float overlap  = rbParticle.radius + freeParticle.radius - r;
         float contactR = rbParticle.radius + freeParticle.radius;
-        float cr = collisionRestitution;
+        float cr = SimulationManager.collisionRestitutionCoefficient;
 
         Vector3 dv1 = -(1f + cr) * m2 / (m1 + m2)
                       * Vector3.Dot(v1 - v2, x1 - x2) * (x1 - x2) / (contactR * contactR);
@@ -209,7 +193,7 @@ public class PhysicsManager : MonoBehaviour
                 {
                     float pos   = GetComponent(p.position, d);
                     float lower = p.radius;
-                    float upper = boxSize - p.radius;
+                    float upper = SimulationManager.boxSize - p.radius;
 
                     if (pos < lower)
                         ResolveRBWall(particles, rb, p, d, lower, 1f, M, invI);
@@ -242,7 +226,7 @@ public class PhysicsManager : MonoBehaviour
 
         if (vn < 0f)
         {
-            Vector3 dv  = -(1f + damping) * vn * normal;
+            Vector3 dv  = -(1f + SimulationManager.damping) * vn * normal;
             Vector3 imp = p.mass * dv;
             rb.velocity        += imp / M;
             rb.angularVelocity += invI * Vector3.Cross(rRel, imp);
@@ -291,7 +275,7 @@ public class PhysicsManager : MonoBehaviour
 
     void ClampAxis(ref float pos, ref float vel, float radius)
     {
-        if (pos < radius)        { pos =  radius;        vel *= -damping; }
-        else if (pos > boxSize - radius) { pos = boxSize - radius; vel *= -damping; }
+        if (pos < radius)        { pos =  radius;        vel *= -SimulationManager.damping; }
+        else if (pos > SimulationManager.boxSize - radius) { pos = SimulationManager.boxSize - radius; vel *= -SimulationManager.damping; }
     }
 }

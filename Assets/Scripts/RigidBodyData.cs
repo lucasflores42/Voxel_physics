@@ -10,8 +10,12 @@ public class RigidBodyData
     public Vector3 velocity;
     public Vector3 angularVelocity;
 
-    public RigidBodyData(int id, List<int> particleIndices,
-                         Vector3 centerOfMass, Vector3 velocity, Vector3 angularVelocity)
+    public RigidBodyData(int id, 
+                        List<int> particleIndices,
+                        Vector3 centerOfMass, 
+                        Vector3 velocity, 
+                        Vector3 angularVelocity
+                        )
     {
         this.id              = id;
         this.particleIndices = particleIndices;

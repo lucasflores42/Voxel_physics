@@ -1,50 +1,80 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// Main entry point. Attach to a GameObject in your Unity scene.
-/// Wires all subsystems together and drives the simulation loop via FixedUpdate.
-/// Mirrors Julia's main() and simulate_step!().
-/// </summary>
+/// Main. Attach to a GameObject in your Unity scene.
+
 public class SimulationManager : MonoBehaviour
 {
     // -----------------------------------------------------------------------
-    //  Inspector-exposed configuration
+    //  Inspector parameters
     // -----------------------------------------------------------------------
+
     [Header("World")]
-    public float tmax = 100f;
-    public float dt = 0.01f;
-    public float boxSize = 10f;
-    public float damping = 0f;
+    public float tmaxInspector = 100f;
+    public float dtInspector = 0.01f;
+    public float boxSizeInspector = 10f;
+    public float dampingInspector = 0f;
 
     [Header("SPH")]
-    public float smoothingLength = 0.1f;
+    public float smoothingLengthInspector = 0.1f;
 
     [Header("Liquid")]
-    public float liquidTargetDensity = 1000f;
-    public float liquidStiffCoef = 10f;
-    public float liquidViscosityCoef = 0.2f;
+    public float liquidTargetDensityInspector = 1000f;
+    public float liquidStiffCoefInspector = 10f;
+    public float liquidViscosityCoefInspector = 0.2f;
 
     [Header("Gas")]
-    public float gasTargetDensity = 1000f;
-    public float gasStiffCoef = 100f;
-    public float gasViscosityCoef = 0.05f;
+    public float gasTargetDensityInspector = 1000f;
+    public float gasStiffCoefInspector = 100f;
+    public float gasViscosityCoefInspector = 0.05f;
+
+    public float gasRegionInspector = 5f;
+    public float gasRegionWidthInspector = 2f;
+    public float gasRegionStrengthInspector = 10f;
 
     [Header("Collision")]
-    public float collisionRestitutionCoefficient = 0f;
+    public float collisionRestitutionCoefficientInspector = 0f;
 
     [Header("Physics")]
-    public float gravityCoef = 0.1f;
+    public float gravityCoefInspector = 0.1f;
 
     [Header("Spawn")]
-    public int   liquidParticleCount = 500;
-    public bool  spawnSolidParticle  = true;
-    public bool  spawnCube           = false;
-    public bool  spawnSphere         = false;
+    public int  liquidParticleCount = 500;
+    public bool spawnSolidParticle  = true;
+    public bool spawnCube           = false;
+    public bool spawnSphere         = false;
 
     // -----------------------------------------------------------------------
-    //  Subsystem references (assign in Inspector or auto-found via GetComponent)
+    //  Global static parameters
     // -----------------------------------------------------------------------
+
+    public static float tmax;
+    public static float dt;
+    public static float boxSize;
+    public static float damping;
+
+    public static float smoothingLength;
+
+    public static float liquidTargetDensity;
+    public static float liquidStiffCoef;
+    public static float liquidViscosityCoef;
+
+    public static float gasTargetDensity;
+    public static float gasStiffCoef;
+    public static float gasViscosityCoef;
+
+    public static float gasRegion;
+    public static float gasRegionWidth;
+    public static float gasRegionStrength;
+
+    public static float collisionRestitutionCoefficient;
+
+    public static float gravityCoef;
+
+    // -----------------------------------------------------------------------
+    //  Subsystem references
+    // -----------------------------------------------------------------------
+
     PhysicsManager    physicsManager;
     LiquidCalculation liquidCalc;
     GasCalculation    gasCalc;
@@ -54,38 +84,52 @@ public class SimulationManager : MonoBehaviour
     // -----------------------------------------------------------------------
     //  Simulation state
     // -----------------------------------------------------------------------
-    List<Particle>     particles   = new List<Particle>();
+
+    List<Particle> particles = new List<Particle>();
     List<RigidBodyData> rigidbodies = new List<RigidBodyData>();
 
     // -----------------------------------------------------------------------
     //  Unity lifecycle
     // -----------------------------------------------------------------------
+
     void Awake()
     {
-        // Grab or auto-create subsystems on the same GameObject
+        // ---------------------------------------------------------------
+        // Copy inspector values into global static variables
+        // ---------------------------------------------------------------
+
+        tmax = tmaxInspector;
+        dt = dtInspector;
+        boxSize = boxSizeInspector;
+        damping = dampingInspector;
+
+        smoothingLength = smoothingLengthInspector;
+
+        liquidTargetDensity = liquidTargetDensityInspector;
+        liquidStiffCoef = liquidStiffCoefInspector;
+        liquidViscosityCoef = liquidViscosityCoefInspector;
+
+        gasTargetDensity = gasTargetDensityInspector;
+        gasStiffCoef = gasStiffCoefInspector;
+        gasViscosityCoef = gasViscosityCoefInspector;
+
+        gasRegion = gasRegionInspector;
+        gasRegionWidth = gasRegionWidthInspector;
+        gasRegionStrength = gasRegionStrengthInspector;
+
+        collisionRestitutionCoefficient = collisionRestitutionCoefficientInspector;
+
+        gravityCoef = gravityCoefInspector;
+
+        // ---------------------------------------------------------------
+        // Get subsystems
+        // ---------------------------------------------------------------
+
         physicsManager = GetOrAdd<PhysicsManager>();
         liquidCalc     = GetOrAdd<LiquidCalculation>();
         gasCalc        = GetOrAdd<GasCalculation>();
         powderCalc     = GetOrAdd<PowderCalculation>();
         solidCalc      = GetOrAdd<SolidCalculation>();
-
-        // Sync world parameters to PhysicsManager
-        physicsManager.boxSize = boxSize;
-        physicsManager.dt = dt;
-        physicsManager.damping = damping;
-        physicsManager.collisionRestitution = collisionRestitutionCoefficient;
-        physicsManager.gravityCoef = gravityCoef;
-
-        // Sync SPH parameters to calculators
-        liquidCalc.smoothingLength = smoothingLength;
-        liquidCalc.liquidTargetDensity = liquidTargetDensity;
-        liquidCalc.liquidStiffCoef = liquidStiffCoef;
-        liquidCalc.liquidViscosityCoef = liquidViscosityCoef;
-
-        gasCalc.smoothingLength = smoothingLength;
-        gasCalc.gasTargetDensity = gasTargetDensity;
-        gasCalc.gasStiffCoef = gasStiffCoef;
-        gasCalc.gasViscosityCoef = gasViscosityCoef;
     }
 
     void Start()
@@ -99,36 +143,66 @@ public class SimulationManager : MonoBehaviour
     }
 
     // -----------------------------------------------------------------------
-    //  Scene setup — mirrors Julia's main()
+    //  Scene setup
     // -----------------------------------------------------------------------
+
     void SpawnScene()
     {
         if (spawnSolidParticle)
-            ParticleFactory.CreateParticle(particles, 1000f, 0.5f,
-                                           new Vector3(5, 5, 5), Vector3.zero);
+        {
+            ParticleFactory.CreateParticle(
+                particles,
+                1000f,
+                0.5f,
+                new Vector3(5, 5, 5),
+                Vector3.zero
+            );
+        }
 
-        ParticleFactory.CreateLiquid(particles, liquidParticleCount, boxSize);
+        ParticleFactory.CreateLiquid(
+            particles,
+            liquidParticleCount,
+            boxSize
+        );
 
         if (spawnCube)
         {
-            ParticleFactory.CreateCube(particles, rigidbodies, 1,
-                                       new Vector3(5 - 0.8f, 5, 8),
-                                       new Vector3(0, 0, -20), Vector3.zero);
-            ParticleFactory.CreateCube(particles, rigidbodies, 2,
-                                       new Vector3(5, 5, 3),
-                                       Vector3.zero, Vector3.zero);
+            ParticleFactory.CreateCube(
+                particles,
+                rigidbodies,
+                1,
+                new Vector3(5 - 0.8f, 5, 8),
+                new Vector3(0, 0, -20),
+                Vector3.zero
+            );
+
+            ParticleFactory.CreateCube(
+                particles,
+                rigidbodies,
+                2,
+                new Vector3(5, 5, 3),
+                Vector3.zero,
+                Vector3.zero
+            );
         }
 
         if (spawnSphere)
         {
-            ParticleFactory.CreateSphere(particles, rigidbodies, 1,
-                                         new Vector3(5, 5, 5), Vector3.zero, Vector3.zero);
+            ParticleFactory.CreateSphere(
+                particles,
+                rigidbodies,
+                1,
+                new Vector3(5, 5, 5),
+                Vector3.zero,
+                Vector3.zero
+            );
         }
     }
 
     // -----------------------------------------------------------------------
-    //  simulate_step!() equivalent
+    //  Simulation step
     // -----------------------------------------------------------------------
+
     void SimulateStep()
     {
         liquidCalc.UpdateParticles(particles, physicsManager, dt);
@@ -143,18 +217,23 @@ public class SimulationManager : MonoBehaviour
     }
 
     // -----------------------------------------------------------------------
-    //  Public access for renderers / UI
+    //  Public access
     // -----------------------------------------------------------------------
-    public IReadOnlyList<Particle>     Particles   => particles;
+
+    public IReadOnlyList<Particle> Particles => particles;
     public IReadOnlyList<RigidBodyData> RigidBodies => rigidbodies;
 
     // -----------------------------------------------------------------------
     //  Helper
     // -----------------------------------------------------------------------
+
     T GetOrAdd<T>() where T : Component
     {
         T c = GetComponent<T>();
-        if (c == null) c = gameObject.AddComponent<T>();
+
+        if (c == null)
+            c = gameObject.AddComponent<T>();
+
         return c;
     }
 }

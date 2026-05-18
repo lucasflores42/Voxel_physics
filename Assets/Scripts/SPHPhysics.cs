@@ -1,10 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// Pure-static helpers: SPH kernel, kernel gradient, gravity, inertia tensor, center of mass.
 /// No MonoBehaviour — call from anywhere.
-/// </summary>
+
 public static class SPHPhysics
 {
     // -------------------------------------------------------------------------
@@ -111,6 +109,41 @@ public static class SPHPhysics
         }
 
         return (cm / totalMass, totalMass);
+    }
+
+    public static void CalculateDensityPressure(Particle particle, List<Particle> particles)
+    {
+        particle.density = 0f;
+
+        foreach (Particle other in particles)
+        {
+            float r = (particle.position - other.position).magnitude;
+            particle.density += other.mass * SPHPhysics.Kernel(r, SimulationManager.smoothingLength);
+        }
+
+        particle.pressure = SimulationManager.gasStiffCoef *
+                            (Mathf.Pow(particle.density / SimulationManager.gasTargetDensity, 7f) - 1f);
+    }
+
+    public static void CalculateTemperature(Particle particle, List<Particle> particles)
+    {
+        float neighborhoodTemp = 0f;
+        int   neighbors        = 0;
+
+        foreach (Particle other in particles)
+        {
+            if (other.material != MaterialType.Liquid) continue;
+
+            float r = (particle.position - other.position).magnitude;
+            if (r <= SimulationManager.smoothingLength)
+            {
+                neighborhoodTemp += other.velocity.sqrMagnitude;
+                neighbors++;
+            }
+        }
+
+        if (neighbors > 0)
+            particle.temperature = 20f * neighborhoodTemp / neighbors;
     }
 }
 

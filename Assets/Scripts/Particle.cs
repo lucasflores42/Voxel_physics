@@ -19,9 +19,14 @@ public class Particle
     // 0 = free particle, >0 = belongs to a rigid body
     public int rigidBodyId;
 
-    public Particle(Vector3 position, Vector3 velocity, float mass,
-                    MaterialType material, float radius,
-                    float temperature = 1f, int rigidBodyId = 0)
+    public Particle(Vector3 position, 
+                    Vector3 velocity, 
+                    float mass,
+                    MaterialType material, 
+                    float radius,
+                    float temperature = 1f, 
+                    int rigidBodyId = 0
+                    )
     {
         this.position    = position;
         this.velocity    = velocity;
