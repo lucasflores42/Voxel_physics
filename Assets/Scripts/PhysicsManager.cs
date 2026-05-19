@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+// places with O(n²): liquid, gas, collisions, SPH density/pressure/temperature calculations
+
 /// Handles rigid body integration, collisions, and boundary conditions.
 /// Called each step by SimulationManager.
 

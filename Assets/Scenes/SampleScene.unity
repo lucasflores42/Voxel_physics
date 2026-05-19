@@ -208,7 +208,7 @@ MonoBehaviour:
   gasRegionStrengthInspector: 10
   collisionRestitutionCoefficientInspector: 0
   gravityCoefInspector: 0.1
-  liquidParticleCount: 100
+  liquidParticleCount: 1000
   spawnSolidParticle: 0
   spawnCube: 0
   spawnSphere: 0
