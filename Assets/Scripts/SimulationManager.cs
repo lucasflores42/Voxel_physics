@@ -70,6 +70,9 @@ public class SimulationManager : MonoBehaviour
     public static float collisionRestitutionCoefficient;
 
     public static float gravityCoef;
+    public float cellSize = 0.5f;
+    private SpatialGrid grid;
+
 
     // -----------------------------------------------------------------------
     //  Subsystem references
@@ -97,6 +100,7 @@ public class SimulationManager : MonoBehaviour
         // ---------------------------------------------------------------
         // Copy inspector values into global static variables
         // ---------------------------------------------------------------
+        grid = new SpatialGrid(cellSize);
 
         tmax = tmaxInspector;
         dt = dtInspector;
@@ -205,12 +209,13 @@ public class SimulationManager : MonoBehaviour
 
     void SimulateStep()
     {
-        liquidCalc.UpdateParticles(particles, physicsManager, dt);
-        gasCalc.UpdateParticles(particles, physicsManager, dt);
+        grid.Rebuild(particles);
+        liquidCalc.UpdateParticles(particles, physicsManager, dt, grid);
+        gasCalc.UpdateParticles(particles, physicsManager, dt, grid);
         powderCalc.UpdateParticles(particles, physicsManager, dt);
         solidCalc.UpdateParticles(particles, physicsManager, dt);
 
-        physicsManager.CalculateCollisions(particles, rigidbodies);
+        physicsManager.CalculateCollisions(particles, rigidbodies, grid);
         physicsManager.UpdateRigidBodies(particles, rigidbodies);
         physicsManager.ApplyBoundaryConditions(particles);
         physicsManager.ApplyBoundaryConditionsRigidBodies(particles, rigidbodies);

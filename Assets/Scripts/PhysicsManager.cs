@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// places with O(n²): liquid, gas, collisions, SPH density/pressure/temperature calculations
+// places with O(n²): liquid, gas, collisions, SPH density/pressure/temperature calculations - ter um vetor com particulas de massa grande no inicio
 
 /// Handles rigid body integration, collisions, and boundary conditions.
 /// Called each step by SimulationManager.
@@ -53,11 +53,19 @@ public class PhysicsManager : MonoBehaviour
         }
     }
 
-    public void CalculateCollisions(List<Particle> particles, List<RigidBodyData> rigidbodies)
+    public void CalculateCollisions(List<Particle> particles, List<RigidBodyData> rigidbodies, SpatialGrid grid)
     {
         for (int i = 0; i < particles.Count; i++)
-            for (int j = i + 1; j < particles.Count; j++)
-                ResolveCollision(particles[i], particles[j], particles, rigidbodies);
+        {
+            Particle p1 = particles[i];
+            Vector3Int cell = grid.GetCell(p1.position);
+            
+            foreach (Particle p2 in grid.GetParticlesInCell(cell))
+            {
+                if (p1 == p2) continue;                
+                ResolveCollision(p1, p2, particles, rigidbodies);
+            }
+        }
     }
 
     void ResolveCollision(Particle p1, Particle p2,

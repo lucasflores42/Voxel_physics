@@ -58,8 +58,8 @@ public static class SPHPhysics
                 fGravity += gravityCoef * mass * other.mass * rVec / (r * r * r);
         }
 
-        // return fGravity;
-        return mass * Vector3.down * 10; // uniform gravity for testing
+        return fGravity;
+        // return mass * Vector3.down * 10; // uniform gravity for testing
     }
 
     // -------------------------------------------------------------------------
@@ -112,27 +112,30 @@ public static class SPHPhysics
         return (cm / totalMass, totalMass);
     }
 
-    public static void CalculateDensityPressure(Particle particle, List<Particle> particles)
+    public static void CalculateDensityPressure(Particle particle, List<Particle> particles, SpatialGrid grid)
     {
         particle.density = 0f;
 
-        foreach (Particle other in particles)
+        foreach (Particle other in grid.GetNeighborCandidates(particle.position))
         {
+            if (particle == other) continue;
+
             float r = (particle.position - other.position).magnitude;
             particle.density += other.mass * SPHPhysics.Kernel(r, SimulationManager.smoothingLength);
         }
 
-        particle.pressure = SimulationManager.gasStiffCoef *
-                            (Mathf.Pow(particle.density / SimulationManager.gasTargetDensity, 7f) - 1f);
+        particle.pressure = SimulationManager.liquidStiffCoef *
+                            (Mathf.Pow(particle.density / SimulationManager.liquidTargetDensity, 7f) - 1f);
     }
 
-    public static void CalculateTemperature(Particle particle, List<Particle> particles)
+    public static void CalculateTemperature(Particle particle, List<Particle> particles, SpatialGrid grid)
     {
         float neighborhoodTemp = 0f;
         int   neighbors        = 0;
 
-        foreach (Particle other in particles)
+        foreach (Particle other in grid.GetNeighborCandidates(particle.position))
         {
+            if (particle == other) continue;
             if (other.material != MaterialType.Liquid) continue;
 
             float r = (particle.position - other.position).magnitude;
