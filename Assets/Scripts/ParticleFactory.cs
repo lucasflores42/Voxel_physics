@@ -9,7 +9,7 @@ public static class ParticleFactory
     // -------------------------------------------------------------------------
     //  Single free solid particle
     // -------------------------------------------------------------------------
-    public static void CreateParticle(List<Particle> particles,
+    public static void CreateParticleSolid(List<Particle> particles,
                                       float mass, float radius,
                                       Vector3 position, Vector3 velocity)
     {

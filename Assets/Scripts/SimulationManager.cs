@@ -38,12 +38,6 @@ public class SimulationManager : MonoBehaviour
     [Header("Physics")]
     public float gravityCoefInspector = 0.1f;
 
-    [Header("Spawn")]
-    public int  liquidParticleCount = 500;
-    public bool spawnSolidParticle  = true;
-    public bool spawnCube           = false;
-    public bool spawnSphere         = false;
-
     // -----------------------------------------------------------------------
     //  Global static parameters
     // -----------------------------------------------------------------------
@@ -152,55 +146,12 @@ public class SimulationManager : MonoBehaviour
 
     void SpawnScene()
     {
-        if (spawnSolidParticle)
-        {
-            ParticleFactory.CreateParticle(
-                particles,
-                1000f,
-                0.5f,
-                new Vector3(5, 5, 5),
-                Vector3.zero
-            );
-        }
-
-        ParticleFactory.CreateLiquid(
-            particles,
-            liquidParticleCount,
-            boxSize
-        );
-
-        if (spawnCube)
-        {
-            ParticleFactory.CreateCube(
-                particles,
-                rigidbodies,
-                1,
-                new Vector3(5 - 0.8f, 5, 8),
-                new Vector3(0, 0, -20),
-                Vector3.zero
-            );
-
-            ParticleFactory.CreateCube(
-                particles,
-                rigidbodies,
-                2,
-                new Vector3(5, 5, 3),
-                Vector3.zero,
-                Vector3.zero
-            );
-        }
-
-        if (spawnSphere)
-        {
-            ParticleFactory.CreateSphere(
-                particles,
-                rigidbodies,
-                1,
-                new Vector3(5, 5, 5),
-                Vector3.zero,
-                Vector3.zero
-            );
-        }
+        // ParticleFactory.CreateParticleSolid(particles, 1000f, 0.5f, new Vector3(5, 5, 5), Vector3.zero);
+        //ParticleFactory.CreateLiquid(particles, 200, 0.1f);
+        ParticleFactory.CreateCube(particles, rigidbodies, 1, new Vector3(5 - 0.8f, 5, 8), new Vector3(0, 0, -20), Vector3.zero);
+        ParticleFactory.CreateCube(particles, rigidbodies, 2, new Vector3(5, 5, 3), new Vector3(0, 0, +20), Vector3.zero);
+        // ParticleFactory.CreateSphere(particles, rigidbodies, 1, new Vector3(5, 5, 5), Vector3.zero, Vector3.zero);
+        
     }
 
     // -----------------------------------------------------------------------
