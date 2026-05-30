@@ -11,17 +11,17 @@ public class SimulationManager : MonoBehaviour
 
     [Header("World")]
     public float tmaxInspector = 100f;
-    public float dtInspector = 0.01f;
+    public float dtInspector = 0.1f;
     public float boxSizeInspector = 10f;
-    public float dampingInspector = 0f;
+    public float dampingInspector = 1.0f;
 
     [Header("SPH")]
     public float smoothingLengthInspector = 0.1f;
 
     [Header("Liquid")]
-    public float liquidTargetDensityInspector = 1000f;
-    public float liquidStiffCoefInspector = 10f;
-    public float liquidViscosityCoefInspector = 0.2f;
+    public float liquidTargetDensityInspector = 100f;
+    public float liquidStiffCoefInspector = 1f;
+    public float liquidViscosityCoefInspector = 0.5f;
 
     [Header("Gas")]
     public float gasTargetDensityInspector = 1000f;
@@ -135,7 +135,7 @@ public class SimulationManager : MonoBehaviour
         SpawnScene();
     }
 
-    void FixedUpdate()
+    void Update()
     {
         SimulateStep();
     }
@@ -147,9 +147,9 @@ public class SimulationManager : MonoBehaviour
     void SpawnScene()
     {
         // ParticleFactory.CreateParticleSolid(particles, 1000f, 0.5f, new Vector3(5, 5, 5), Vector3.zero);
-        //ParticleFactory.CreateLiquid(particles, 200, 0.1f);
-        ParticleFactory.CreateCube(particles, rigidbodies, 1, new Vector3(5 - 0.8f, 5, 8), new Vector3(0, 0, -20), Vector3.zero);
-        ParticleFactory.CreateCube(particles, rigidbodies, 2, new Vector3(5, 5, 3), new Vector3(0, 0, +20), Vector3.zero);
+        ParticleFactory.CreateLiquid(particles, 500, 0.1f);
+        //ParticleFactory.CreateCube(particles, rigidbodies, 1, new Vector3(5, 5, 8), new Vector3(-0.5f, 0, 0), Vector3.zero);
+        //ParticleFactory.CreateCube(particles, rigidbodies, 2, new Vector3(5, 5, 3), new Vector3(0.5f, 0, 0), Vector3.zero);
         // ParticleFactory.CreateSphere(particles, rigidbodies, 1, new Vector3(5, 5, 5), Vector3.zero, Vector3.zero);
         
     }

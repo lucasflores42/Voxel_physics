@@ -193,7 +193,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimulationManager
   tmaxInspector: 100
-  dtInspector: 0.01
+  dtInspector: 0.001
   boxSizeInspector: 10
   dampingInspector: 0
   smoothingLengthInspector: 0.1
@@ -208,10 +208,7 @@ MonoBehaviour:
   gasRegionStrengthInspector: 10
   collisionRestitutionCoefficientInspector: 0
   gravityCoefInspector: 0.1
-  liquidParticleCount: 1000
-  spawnSolidParticle: 0
-  spawnCube: 0
-  spawnSphere: 0
+  cellSize: 2
 --- !u!4 &484730416
 Transform:
   m_ObjectHideFlags: 0
