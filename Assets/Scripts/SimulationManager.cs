@@ -147,11 +147,62 @@ public class SimulationManager : MonoBehaviour
     void SpawnScene()
     {
         //ParticleFactory.CreateParticleSolid(particles, 1000f, 0.5f, new Vector3(5, 5, 5), Vector3.zero);
-        ParticleFactory.CreateLiquid(particles, 200, 0.1f);
+        //ParticleFactory.CreateLiquid(particles, 200, 0.1f);
         //ParticleFactory.CreateCube(particles, rigidbodies, 1, 100, new Vector3(5, 5, 5), new Vector3(0, 0, 0), Vector3.zero);
         //ParticleFactory.CreateCube(particles, rigidbodies, 2, new Vector3(5, 5, 3), new Vector3(0.5f, 0, 0), Vector3.zero);
-        ParticleFactory.CreateSphere(particles, rigidbodies, 1, 100, new Vector3(5, 5, 5), Vector3.zero, Vector3.zero);
-        
+        //ParticleFactory.CreateSphere(particles, rigidbodies, 1, 100, new Vector3(5, 5, 5), Vector3.zero, Vector3.zero);
+
+       // Create scene 1
+       // Generate solid terrain (single rigid body) with a hill and a valley
+        Vector3 terrainCenterOffset = new Vector3(0f, 0f, 0f);
+        float startX = 0f, endX = 9f;
+        float startZ = 0f, endZ = 9f;
+        float particleRadius = 0.15f;
+        float spacing = 2f * particleRadius;
+
+        int terrainId = 1;
+        var terrainIndices = new List<int>();
+
+        // heightmap parameters
+        float baseY = 2.0f;
+        // hill
+        Vector2 hillCenter = new Vector2(5f, 6f);
+        float hillAmp = 0.9f;
+        float hillSigma = 1.2f;
+        // valley
+        Vector2 valleyCenter = new Vector2(7f, 4f);
+        float valleyAmp = -0.8f;
+        float valleySigma = 1.0f;
+
+        for (float x = startX; x <= endX; x += spacing)
+        for (float z = startZ; z <= endZ; z += spacing)
+        {
+            float dxh = x - hillCenter.x;
+            float dzh = z - hillCenter.y;
+            float hill = hillAmp * Mathf.Exp(-(dxh * dxh + dzh * dzh) / (2f * hillSigma * hillSigma));
+
+            float dxv = x - valleyCenter.x;
+            float dzv = z - valleyCenter.y;
+            float valley = valleyAmp * Mathf.Exp(-(dxv * dxv + dzv * dzv) / (2f * valleySigma * valleySigma));
+
+            float y = baseY + hill + valley;
+
+            // add two layers for thickness
+            for (int layer = 0; layer < 2; layer++)
+            {
+                Vector3 pos = new Vector3(x, y - layer * spacing, z) + terrainCenterOffset;
+                particles.Add(new Particle(pos, Vector3.zero, 100f, MaterialType.Solid, particleRadius, rigidBodyId: terrainId));
+                terrainIndices.Add(particles.Count - 1);
+            }
+        }
+
+        (Vector3 terrainCM, float _) = SPHPhysics.CalculateCenterOfMass(particles, terrainIndices);
+        foreach (int idx in terrainIndices)
+            particles[idx].velocity = Vector3.zero;
+
+        rigidbodies.Add(new RigidBodyData(terrainId, terrainIndices, terrainCM, Vector3.zero, Vector3.zero));
+
+            
     }
 
     // -----------------------------------------------------------------------

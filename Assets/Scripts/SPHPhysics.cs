@@ -59,8 +59,8 @@ public static class SPHPhysics
                 fGravity += gravityCoef * mass * other.mass * rVec / (r * r * r);
         }
        
-        return fGravity;
-        //return mass * Vector3.down * 10; // uniform gravity for testing
+        //return fGravity;
+        return mass * Vector3.down * 10; // uniform gravity for testing
     }
 
     // -------------------------------------------------------------------------
