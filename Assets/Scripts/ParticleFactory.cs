@@ -19,14 +19,14 @@ public static class ParticleFactory
     // -------------------------------------------------------------------------
     //  Liquid cloud
     // -------------------------------------------------------------------------
-    public static void CreateLiquid(List<Particle> particles, int numParticles, float boxSize)
+    public static void CreateLiquid(List<Particle> particles, int numParticles)
     {
         for (int i = 0; i < numParticles; i++)
         {
             Vector3 pos = new Vector3(
-                Random.value * 0.5f,
-                Random.value * boxSize,
-                Random.value * boxSize
+                Random.value * SimulationManager.boxSize,
+                9f,
+                Random.value * SimulationManager.boxSize
             );
 
             particles.Add(new Particle(pos, Vector3.zero, 0.1f, MaterialType.Liquid, 0.1f,

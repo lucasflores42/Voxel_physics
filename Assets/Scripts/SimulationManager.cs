@@ -147,13 +147,13 @@ public class SimulationManager : MonoBehaviour
     void SpawnScene()
     {
         //ParticleFactory.CreateParticleSolid(particles, 1000f, 0.5f, new Vector3(5, 5, 5), Vector3.zero);
-        //ParticleFactory.CreateLiquid(particles, 200, 0.1f);
+        ParticleFactory.CreateLiquid(particles, 200);
         //ParticleFactory.CreateCube(particles, rigidbodies, 1, 100, new Vector3(5, 5, 5), new Vector3(0, 0, 0), Vector3.zero);
         //ParticleFactory.CreateCube(particles, rigidbodies, 2, new Vector3(5, 5, 3), new Vector3(0.5f, 0, 0), Vector3.zero);
         //ParticleFactory.CreateSphere(particles, rigidbodies, 1, 100, new Vector3(5, 5, 5), Vector3.zero, Vector3.zero);
 
-       // Create scene 1
-       // Generate solid terrain (single rigid body) with a hill and a valley
+        // Create scene 1
+        // Generate solid terrain (single rigid body) with a hill and a valley
         Vector3 terrainCenterOffset = new Vector3(0f, 0f, 0f);
         float startX = 0f, endX = 9f;
         float startZ = 0f, endZ = 9f;
@@ -187,8 +187,8 @@ public class SimulationManager : MonoBehaviour
 
             float y = baseY + hill + valley;
 
-            // add two layers for thickness
-            for (int layer = 0; layer < 2; layer++)
+            // add many layers for stability - create a solid block
+            for (int layer = 0; layer < 4; layer++)
             {
                 Vector3 pos = new Vector3(x, y - layer * spacing, z) + terrainCenterOffset;
                 particles.Add(new Particle(pos, Vector3.zero, 100f, MaterialType.Solid, particleRadius, rigidBodyId: terrainId));

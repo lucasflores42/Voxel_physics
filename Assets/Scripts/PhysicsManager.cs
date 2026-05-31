@@ -20,6 +20,8 @@ public class PhysicsManager : MonoBehaviour
     {
         foreach (RigidBodyData rb in rigidbodies)
         {
+
+            if (rb.id == 1) continue; // skip free particles
             Vector3 cmOld = rb.centerOfMass;
 
             // --- Translation ---
