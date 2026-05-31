@@ -80,7 +80,10 @@ public class PhysicsManager : MonoBehaviour
         bool rb2Exists = p2.rigidBodyId != 0;
 
         if (rb1Exists && rb2Exists)
+        {
+            if (p1.rigidBodyId == p2.rigidBodyId) return;
             CollideRBvsRB(p1, p2, r, particles, rigidbodies);
+        }
         else if (!rb1Exists && !rb2Exists)
             CollideFreeVsFree(p1, p2, r);
         else if (rb1Exists && !rb2Exists)

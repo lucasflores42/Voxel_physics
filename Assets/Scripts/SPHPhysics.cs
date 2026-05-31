@@ -50,6 +50,7 @@ public static class SPHPhysics
         foreach (Particle other in particles)
         {
             if (other.material != MaterialType.Solid) continue;
+            if (ownRigidBodyId != 0 && other.rigidBodyId == ownRigidBodyId) continue;
 
             Vector3 rVec = other.position - position;
             float r = rVec.magnitude;
@@ -57,7 +58,7 @@ public static class SPHPhysics
             if (r > 0.0001f)
                 fGravity += gravityCoef * mass * other.mass * rVec / (r * r * r);
         }
-
+       
         return fGravity;
         //return mass * Vector3.down * 10; // uniform gravity for testing
     }
