@@ -146,11 +146,11 @@ public class SimulationManager : MonoBehaviour
 
     void SpawnScene()
     {
-        // ParticleFactory.CreateParticleSolid(particles, 1000f, 0.5f, new Vector3(5, 5, 5), Vector3.zero);
-        ParticleFactory.CreateLiquid(particles, 500, 0.1f);
-        //ParticleFactory.CreateCube(particles, rigidbodies, 1, new Vector3(5, 5, 8), new Vector3(-0.5f, 0, 0), Vector3.zero);
+        //ParticleFactory.CreateParticleSolid(particles, 1000f, 0.5f, new Vector3(5, 5, 5), Vector3.zero);
+        ParticleFactory.CreateLiquid(particles, 200, 0.1f);
+        ParticleFactory.CreateCube(particles, rigidbodies, 1, 100, new Vector3(5, 5, 5), new Vector3(0, 0, 0), Vector3.zero);
         //ParticleFactory.CreateCube(particles, rigidbodies, 2, new Vector3(5, 5, 3), new Vector3(0.5f, 0, 0), Vector3.zero);
-        // ParticleFactory.CreateSphere(particles, rigidbodies, 1, new Vector3(5, 5, 5), Vector3.zero, Vector3.zero);
+        //ParticleFactory.CreateSphere(particles, rigidbodies, 1, 100, new Vector3(5, 5, 5), Vector3.zero, Vector3.zero);
         
     }
 

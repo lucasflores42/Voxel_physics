@@ -38,7 +38,7 @@ public static class ParticleFactory
     //  Rigid Cube  (8 corner particles)
     // -------------------------------------------------------------------------
     public static void CreateCube(List<Particle> particles, List<RigidBodyData> rigidbodies,
-                                  int id, Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
+                                  int id, float mass,Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
     {
         float r  = 0.4f;
         float d  = 2f * r;
@@ -50,14 +50,14 @@ public static class ParticleFactory
         };
 
         BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
-                       localPositions, mass: 1f, radius: r, material: MaterialType.Solid);
+                       localPositions, mass: mass, radius: r, material: MaterialType.Solid);
     }
 
     // -------------------------------------------------------------------------
     //  Rigid Sphere  (shell of particles)
     // -------------------------------------------------------------------------
     public static void CreateSphere(List<Particle> particles, List<RigidBodyData> rigidbodies,
-                                    int id, Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
+                                    int id, float mass, Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
     {
         float particleRadius = 0.15f;
         float sphereRadius   = 0.5f;
@@ -76,7 +76,7 @@ public static class ParticleFactory
         }
 
         BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
-                       localPositions.ToArray(), mass: 10f, radius: particleRadius,
+                       localPositions.ToArray(), mass: mass, radius: particleRadius,
                        material: MaterialType.Solid);
     }
 
@@ -84,7 +84,7 @@ public static class ParticleFactory
     //  Rigid Disk
     // -------------------------------------------------------------------------
     public static void CreateDisk(List<Particle> particles, List<RigidBodyData> rigidbodies,
-                                  int id, float diskRadius, Vector3 offset,
+                                  int id, float mass, float diskRadius, Vector3 offset,
                                   Vector3 initVelocity, Vector3 initAngular)
     {
         float particleRadius = 0.2f;
@@ -101,7 +101,7 @@ public static class ParticleFactory
         }
 
         BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
-                       localPositions.ToArray(), mass: 1f, radius: particleRadius,
+                       localPositions.ToArray(), mass: mass, radius: particleRadius,
                        material: MaterialType.Liquid);
     }
 
