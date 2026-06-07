@@ -50,7 +50,7 @@ public static class ParticleFactory
         };
 
         BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
-                       localPositions, mass: mass, radius: r, material: MaterialType.Solid);
+                       localPositions, mass: mass, radius: r, material: MaterialType.Solid, 1);
     }
 
     // -------------------------------------------------------------------------
@@ -77,7 +77,7 @@ public static class ParticleFactory
 
         BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
                        localPositions.ToArray(), mass: mass, radius: particleRadius,
-                       material: MaterialType.Solid);
+                       material: MaterialType.Solid, 1);
     }
 
     // -------------------------------------------------------------------------
@@ -102,7 +102,7 @@ public static class ParticleFactory
 
         BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
                        localPositions.ToArray(), mass: mass, radius: particleRadius,
-                       material: MaterialType.Liquid);
+                       material: MaterialType.Liquid, 1);
     }
 
 
@@ -112,7 +112,7 @@ public static class ParticleFactory
     static void BuildRigidBody(List<Particle> particles, List<RigidBodyData> rigidbodies,
                                int id, Vector3 offset, Vector3 initVelocity, Vector3 initAngular,
                                Vector3[] localPositions, float mass, float radius,
-                               MaterialType material)
+                               MaterialType material, int physics)
     {
         var indices = new List<int>();
 
@@ -132,6 +132,6 @@ public static class ParticleFactory
             particles[idx].velocity = initVelocity + Vector3.Cross(initAngular, r);
         }
 
-        rigidbodies.Add(new RigidBodyData(id, indices, cm, initVelocity, initAngular));
+        rigidbodies.Add(new RigidBodyData(id, indices, cm, initVelocity, initAngular, physics));
     }
 }

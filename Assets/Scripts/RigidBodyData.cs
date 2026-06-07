@@ -9,12 +9,14 @@ public class RigidBodyData
     public Vector3 centerOfMass;
     public Vector3 velocity;
     public Vector3 angularVelocity;
+    public int physics;
 
     public RigidBodyData(int id, 
                         List<int> particleIndices,
                         Vector3 centerOfMass, 
                         Vector3 velocity, 
-                        Vector3 angularVelocity
+                        Vector3 angularVelocity,
+                        int physics
                         )
     {
         this.id              = id;
@@ -22,5 +24,6 @@ public class RigidBodyData
         this.centerOfMass    = centerOfMass;
         this.velocity        = velocity;
         this.angularVelocity = angularVelocity;
+        this.physics = physics;
     }
 }

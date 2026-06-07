@@ -166,11 +166,11 @@ public class SimulationManager : MonoBehaviour
         // heightmap parameters
         float baseY = 2.0f;
         // hill
-        Vector2 hillCenter = new Vector2(5f, 6f);
+        Vector2 hillCenter = new Vector2(boxSize * 1/3f, boxSize * 1/3f);
         float hillAmp = 0.9f;
         float hillSigma = 1.2f;
         // valley
-        Vector2 valleyCenter = new Vector2(7f, 4f);
+        Vector2 valleyCenter = new Vector2(boxSize * 2/3f, boxSize * 2/3f);
         float valleyAmp = -0.8f;
         float valleySigma = 1.0f;
 
@@ -191,7 +191,7 @@ public class SimulationManager : MonoBehaviour
             for (int layer = 0; layer < 4; layer++)
             {
                 Vector3 pos = new Vector3(x, y - layer * spacing, z) + terrainCenterOffset;
-                particles.Add(new Particle(pos, Vector3.zero, 100f, MaterialType.Solid, particleRadius, rigidBodyId: terrainId));
+                particles.Add(new Particle(pos, Vector3.zero, 100f, MaterialType.Solid, particleRadius, rigidBodyId: terrainId, physics: 0));
                 terrainIndices.Add(particles.Count - 1);
             }
         }
@@ -200,7 +200,7 @@ public class SimulationManager : MonoBehaviour
         foreach (int idx in terrainIndices)
             particles[idx].velocity = Vector3.zero;
 
-        rigidbodies.Add(new RigidBodyData(terrainId, terrainIndices, terrainCM, Vector3.zero, Vector3.zero));
+        rigidbodies.Add(new RigidBodyData(terrainId, terrainIndices, terrainCM, Vector3.zero, Vector3.zero, 0));
 
             
     }
