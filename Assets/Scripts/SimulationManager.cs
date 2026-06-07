@@ -166,13 +166,13 @@ public class SimulationManager : MonoBehaviour
         // heightmap parameters
         float baseY = 2.0f;
         // hill
-        Vector2 hillCenter = new Vector2(boxSize * 1/3f, boxSize * 1/3f);
-        float hillAmp = 0.9f;
+        Vector2 hillCenter = new Vector2(boxSize * 1/4f, boxSize * 1/4f);
+        float hillAmp = 2.9f;
         float hillSigma = 1.2f;
         // valley
-        Vector2 valleyCenter = new Vector2(boxSize * 2/3f, boxSize * 2/3f);
-        float valleyAmp = -0.8f;
-        float valleySigma = 1.0f;
+        Vector2 valleyCenter = new Vector2(boxSize * 1/2f, boxSize * 1/2f);
+        float valleyAmp = -1.8f;
+        float valleySigma = 1.5f;
 
         for (float x = startX; x <= endX; x += spacing)
         for (float z = startZ; z <= endZ; z += spacing)
@@ -191,7 +191,7 @@ public class SimulationManager : MonoBehaviour
             for (int layer = 0; layer < 4; layer++)
             {
                 Vector3 pos = new Vector3(x, y - layer * spacing, z) + terrainCenterOffset;
-                particles.Add(new Particle(pos, Vector3.zero, 100f, MaterialType.Solid, particleRadius, rigidBodyId: terrainId, physics: 0));
+                particles.Add(new Particle(pos, Vector3.zero, 100f, MaterialType.Solid, particleRadius, rigidBodyId: terrainId, sph: 0));
                 terrainIndices.Add(particles.Count - 1);
             }
         }

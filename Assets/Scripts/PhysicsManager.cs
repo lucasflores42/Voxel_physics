@@ -20,8 +20,11 @@ public class PhysicsManager : MonoBehaviour
     {
         foreach (RigidBodyData rb in rigidbodies)
         {
-
             if (rb.id == 1) continue; // skip free particles
+
+            // otimização: não atualizar rigid body se physics == 0 (dormindo/static)
+            if (rb.physics == 0) continue;
+
             Vector3 cmOld = rb.centerOfMass;
 
             // --- Translation ---
@@ -251,19 +254,25 @@ public class PhysicsManager : MonoBehaviour
     void ApplyImpulseToRB(List<Particle> particles, RigidBodyData rb, Particle contactParticle,
                           Vector3 impulse)
     {
-        float M = TotalMass(particles, rb);
-        Matrix3x3 invI = SPHPhysics.CalculateInertiaTensor(particles, rb).Inverse();
-        Vector3 rRel = contactParticle.position - rb.centerOfMass;
+        if (rb.physics == 1)
+        {
+            float M = TotalMass(particles, rb);
+            Matrix3x3 invI = SPHPhysics.CalculateInertiaTensor(particles, rb).Inverse();
+            Vector3 rRel = contactParticle.position - rb.centerOfMass;
 
-        rb.velocity        += impulse / M;
-        rb.angularVelocity += invI * Vector3.Cross(rRel, impulse);
+            rb.velocity += impulse / M;
+            rb.angularVelocity += invI * Vector3.Cross(rRel, impulse);
+        }
     }
 
     void ShiftRB(List<Particle> particles, RigidBodyData rb, Vector3 shift)
     {
-        rb.centerOfMass += shift;
-        foreach (int idx in rb.particleIndices)
-            particles[idx].position += shift;
+        if (rb.physics == 1)
+        {
+            rb.centerOfMass += shift;
+            foreach (int idx in rb.particleIndices)
+                particles[idx].position += shift;
+        }
     }
 
     static float TotalMass(List<Particle> particles, RigidBodyData rb)
