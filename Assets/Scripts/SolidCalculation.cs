@@ -10,8 +10,7 @@ public class SolidCalculation : MonoBehaviour
             // Rigid body solids are handled by PhysicsManager.UpdateRigidBodies
             if (particle.material != MaterialType.Solid || particle.rigidBodyId != 0) continue;
 
-            Vector3 fi = manager.CalculateGravity(particle.position, particle.mass,
-                                                   particle.rigidBodyId, particles);
+            Vector3 fi = SPHPhysics.CalculateGravity(particle.position, particle.mass, particle.rigidBodyId, particles, SimulationManager.gravityCoef);
             particle.velocity += (fi / particle.mass) * dt;
             particle.position += particle.velocity * dt;
         }

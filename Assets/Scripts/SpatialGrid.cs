@@ -80,4 +80,18 @@ public class SpatialGrid
             }
         }
     }
+
+    // diagnostic helpers
+    public int CellCount()
+    {
+        return cells.Count;
+    }
+
+    public int TotalParticlesCount()
+    {
+        int s = 0;
+        foreach (var kv in cells) s += kv.Value.Count;
+        return s;
+    }
+
 }

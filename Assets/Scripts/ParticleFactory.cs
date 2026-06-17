@@ -9,9 +9,7 @@ public static class ParticleFactory
     // -------------------------------------------------------------------------
     //  Single free solid particle
     // -------------------------------------------------------------------------
-    public static void CreateParticleSolid(List<Particle> particles,
-                                      float mass, float radius,
-                                      Vector3 position, Vector3 velocity)
+    public static void CreateParticleSolid(List<Particle> particles, float mass, float radius, Vector3 position, Vector3 velocity)
     {
         particles.Add(new Particle(position, velocity, mass, MaterialType.Solid, radius));
     }
@@ -29,16 +27,14 @@ public static class ParticleFactory
                 Random.value * SimulationManager.boxSize
             );
 
-            particles.Add(new Particle(pos, Vector3.zero, 0.1f, MaterialType.Liquid, 0.1f,
-                                       temperature: 1f));
+            particles.Add(new Particle(pos, Vector3.zero, 0.1f, MaterialType.Liquid, 0.1f, temperature: 1f));
         }
     }
 
     // -------------------------------------------------------------------------
     //  Rigid Cube  (8 corner particles)
     // -------------------------------------------------------------------------
-    public static void CreateCube(List<Particle> particles, List<RigidBodyData> rigidbodies,
-                                  int id, float mass,Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
+    public static void CreateCube(List<Particle> particles, List<RigidBodyData> rigidbodies, int id, float mass,Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
     {
         float r  = 0.4f;
         float d  = 2f * r;
@@ -49,15 +45,13 @@ public static class ParticleFactory
             new Vector3(0,0,d), new Vector3(d,0,d), new Vector3(d,d,d), new Vector3(0,d,d)
         };
 
-        BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
-                       localPositions, mass: mass, radius: r, material: MaterialType.Solid, 1);
+        BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular, localPositions, mass: mass, radius: r, material: MaterialType.Solid, 1);
     }
 
     // -------------------------------------------------------------------------
     //  Rigid Sphere  (shell of particles)
     // -------------------------------------------------------------------------
-    public static void CreateSphere(List<Particle> particles, List<RigidBodyData> rigidbodies,
-                                    int id, float mass, Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
+    public static void CreateSphere(List<Particle> particles, List<RigidBodyData> rigidbodies, int id, float mass, Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
     {
         float particleRadius = 0.15f;
         float sphereRadius   = 0.5f;
@@ -75,17 +69,13 @@ public static class ParticleFactory
                 localPositions.Add(new Vector3(x, y, z));
         }
 
-        BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
-                       localPositions.ToArray(), mass: mass, radius: particleRadius,
-                       material: MaterialType.Solid, 1);
+        BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular, localPositions.ToArray(), mass: mass, radius: particleRadius, material: MaterialType.Solid, 1);
     }
 
     // -------------------------------------------------------------------------
     //  Rigid Disk
     // -------------------------------------------------------------------------
-    public static void CreateDisk(List<Particle> particles, List<RigidBodyData> rigidbodies,
-                                  int id, float mass, float diskRadius, Vector3 offset,
-                                  Vector3 initVelocity, Vector3 initAngular)
+    public static void CreateDisk(List<Particle> particles, List<RigidBodyData> rigidbodies, int id, float mass, float diskRadius, Vector3 offset, Vector3 initVelocity, Vector3 initAngular)
     {
         float particleRadius = 0.2f;
         float thickness      = 0.01f;
@@ -100,19 +90,35 @@ public static class ParticleFactory
                 localPositions.Add(new Vector3(x, y, z));
         }
 
-        BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular,
-                       localPositions.ToArray(), mass: mass, radius: particleRadius,
-                       material: MaterialType.Liquid, 1);
+        BuildRigidBody(particles, rigidbodies, id, offset, initVelocity, initAngular, localPositions.ToArray(), mass: mass, radius: particleRadius, material: MaterialType.Liquid, 1);
     }
 
 
     // -------------------------------------------------------------------------
     //  Shared builder
     // -------------------------------------------------------------------------
-    static void BuildRigidBody(List<Particle> particles, List<RigidBodyData> rigidbodies,
-                               int id, Vector3 offset, Vector3 initVelocity, Vector3 initAngular,
-                               Vector3[] localPositions, float mass, float radius,
-                               MaterialType material, int physics)
+    // -------------------------------------------------------------------------
+    //  Player stack (three particles vertically)
+    // -------------------------------------------------------------------------
+    public static void CreatePlayerStack(List<Particle> particles, List<RigidBodyData> rigidbodies,
+                                         int id, float massPerParticle, Vector3 basePosition,
+                                         Vector3 initVelocity, Vector3 initAngular)
+    {
+        float particleRadius = 0.3f;
+        float spacing = 2f * particleRadius;
+
+        Vector3[] localPositions = new Vector3[3]
+        {
+            new Vector3(0f, 0f, 0f),
+            new Vector3(0f, spacing, 0f),
+            new Vector3(0f, 2f * spacing, 0f)
+        };
+
+        BuildRigidBody(particles, rigidbodies, id, basePosition, initVelocity, initAngular,
+                       localPositions, massPerParticle, particleRadius, MaterialType.Solid, 1);
+    }
+
+    static void BuildRigidBody(List<Particle> particles, List<RigidBodyData> rigidbodies, int id, Vector3 offset, Vector3 initVelocity, Vector3 initAngular, Vector3[] localPositions, float mass, float radius, MaterialType material, int physics)
     {
         var indices = new List<int>();
 
@@ -123,7 +129,7 @@ public static class ParticleFactory
             indices.Add(particles.Count - 1);
         }
 
-        (Vector3 cm, float _) = SPHPhysics.CalculateCenterOfMass(particles, indices);
+        (Vector3 cm, float totalMass) = SPHPhysics.CalculateCenterOfMass(particles, indices);
 
         // Apply initial angular velocity to each particle's velocity
         foreach (int idx in indices)
@@ -132,6 +138,12 @@ public static class ParticleFactory
             particles[idx].velocity = initVelocity + Vector3.Cross(initAngular, r);
         }
 
-        rigidbodies.Add(new RigidBodyData(id, indices, cm, initVelocity, initAngular, physics));
+        // create RB with computed mass and then compute inertia/inverse
+        var rb = new RigidBodyData(id, indices, cm, initVelocity, initAngular, physics, totalMass);
+        Matrix3x3 I = SPHPhysics.CalculateInertiaTensor(particles, rb);
+        rb.inertia = I;
+        rb.invInertia = I.Inverse();
+
+        rigidbodies.Add(rb);
     }
 }

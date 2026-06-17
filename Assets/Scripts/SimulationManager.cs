@@ -66,6 +66,10 @@ public class SimulationManager : MonoBehaviour
     public static float gravityCoef;
     public float cellSize = 0.5f;
     private SpatialGrid grid;
+    // profiling
+    int _profileFrame = 0;
+    const int PROFILE_INTERVAL = 60;
+    double _accGrid = 0, _accLiquid = 0, _accGas = 0, _accPowder = 0, _accSolid = 0, _accCollisions = 0, _accRB = 0, _accBC = 0, _accBCRB = 0;
 
 
     // -----------------------------------------------------------------------
@@ -196,11 +200,44 @@ public class SimulationManager : MonoBehaviour
             }
         }
 
-        (Vector3 terrainCM, float _) = SPHPhysics.CalculateCenterOfMass(particles, terrainIndices);
+        (Vector3 terrainCM, float terrainMass) = SPHPhysics.CalculateCenterOfMass(particles, terrainIndices);
         foreach (int idx in terrainIndices)
             particles[idx].velocity = Vector3.zero;
 
-        rigidbodies.Add(new RigidBodyData(terrainId, terrainIndices, terrainCM, Vector3.zero, Vector3.zero, 0));
+        var terrainRb = new RigidBodyData(terrainId, terrainIndices, terrainCM, Vector3.zero, Vector3.zero, 0, terrainMass);
+        Matrix3x3 terrainI = SPHPhysics.CalculateInertiaTensor(particles, terrainRb);
+        terrainRb.inertia = terrainI;
+        terrainRb.invInertia = terrainI.Inverse();
+        rigidbodies.Add(terrainRb);
+
+        // ------------------------------------------------------------------
+        // Create a player rigid body and wire PlayerRBController(s)
+        // ------------------------------------------------------------------
+        int playerId = 2;
+        // per-particle mass for the player's rigid body (tune as needed)
+        float playerParticleMass = 5f;
+        Vector3 playerPos = new Vector3(boxSize * 0.5f, 6f, boxSize * 0.5f);
+        ParticleFactory.CreatePlayerStack(particles, rigidbodies, playerId, playerParticleMass, playerPos, Vector3.zero, Vector3.zero);
+
+        // compute inertia for the newly created player RB (ParticleFactory already computes it, but ensure it's present)
+        foreach (var rb in rigidbodies)
+        {
+            if (rb.id == playerId)
+            {
+                Matrix3x3 Iplayer = SPHPhysics.CalculateInertiaTensor(particles, rb);
+                rb.inertia = Iplayer;
+                rb.invInertia = Iplayer.Inverse();
+                break;
+            }
+        }
+
+        // Wire any PlayerRBController components to use this RB
+        var controllers = UnityEngine.Object.FindObjectsByType<PlayerRBController>(FindObjectsSortMode.None);
+        foreach (var c in controllers)
+        {
+            c.simManager = this;
+            c.playerRbId = playerId;
+        }
 
             
     }
@@ -211,16 +248,66 @@ public class SimulationManager : MonoBehaviour
 
     void SimulateStep()
     {
+        double t0 = Time.realtimeSinceStartupAsDouble;
         grid.Rebuild(particles);
-        liquidCalc.UpdateParticles(particles, physicsManager, dt, grid);
-        gasCalc.UpdateParticles(particles, physicsManager, dt, grid);
-        powderCalc.UpdateParticles(particles, physicsManager, dt);
-        solidCalc.UpdateParticles(particles, physicsManager, dt);
+        double tGrid = (Time.realtimeSinceStartupAsDouble - t0) * 1000.0;
 
+        double t1 = Time.realtimeSinceStartupAsDouble;
+        liquidCalc.UpdateParticles(particles, physicsManager, dt, grid);
+        double tLiquid = (Time.realtimeSinceStartupAsDouble - t1) * 1000.0;
+
+        double t2 = Time.realtimeSinceStartupAsDouble;
+        gasCalc.UpdateParticles(particles, physicsManager, dt, grid);
+        double tGas = (Time.realtimeSinceStartupAsDouble - t2) * 1000.0;
+
+        double t3 = Time.realtimeSinceStartupAsDouble;
+        powderCalc.UpdateParticles(particles, physicsManager, dt);
+        double tPowder = (Time.realtimeSinceStartupAsDouble - t3) * 1000.0;
+
+        double t4 = Time.realtimeSinceStartupAsDouble;
+        solidCalc.UpdateParticles(particles, physicsManager, dt);
+        double tSolid = (Time.realtimeSinceStartupAsDouble - t4) * 1000.0;
+
+        double t5 = Time.realtimeSinceStartupAsDouble;
         physicsManager.CalculateCollisions(particles, rigidbodies, grid);
+        double tColl = (Time.realtimeSinceStartupAsDouble - t5) * 1000.0;
+
+        double t6 = Time.realtimeSinceStartupAsDouble;
         physicsManager.UpdateRigidBodies(particles, rigidbodies);
+        double tRB = (Time.realtimeSinceStartupAsDouble - t6) * 1000.0;
+
+        double t7 = Time.realtimeSinceStartupAsDouble;
         physicsManager.ApplyBoundaryConditions(particles);
+        double tBC = (Time.realtimeSinceStartupAsDouble - t7) * 1000.0;
+
+        double t8 = Time.realtimeSinceStartupAsDouble;
         physicsManager.ApplyBoundaryConditionsRigidBodies(particles, rigidbodies);
+        double tBCRB = (Time.realtimeSinceStartupAsDouble - t8) * 1000.0;
+
+        _profileFrame++;
+        _accGrid += tGrid; _accLiquid += tLiquid; _accGas += tGas; _accPowder += tPowder; _accSolid += tSolid; _accCollisions += tColl; _accRB += tRB; _accBC += tBC; _accBCRB += tBCRB;
+
+        if (_profileFrame % PROFILE_INTERVAL == 0)
+        {
+            double avgGrid = _accGrid / PROFILE_INTERVAL;
+            double avgLiquid = _accLiquid / PROFILE_INTERVAL;
+            double avgGas = _accGas / PROFILE_INTERVAL;
+            double avgPowder = _accPowder / PROFILE_INTERVAL;
+            double avgSolid = _accSolid / PROFILE_INTERVAL;
+            double avgColl = _accCollisions / PROFILE_INTERVAL;
+            double avgRB = _accRB / PROFILE_INTERVAL;
+            double avgBC = _accBC / PROFILE_INTERVAL;
+            double avgBCRB = _accBCRB / PROFILE_INTERVAL;
+
+            int cellCount = grid.CellCount();
+            int totalParticlesInCells = grid.TotalParticlesCount();
+            double avgParticlesPerCell = cellCount > 0 ? (double)totalParticlesInCells / cellCount : 0.0;
+
+            Debug.Log(string.Format("Sim profile (ms avg): grid={0:F2}, liquid={1:F2}, gas={2:F2}, powder={3:F2}, solid={4:F2}, collisions={5:F2}, rbs={6:F2}, bc={7:F2}, bcrb={8:F2} | cells={9}, avgParticles/cell={10:F2}", avgGrid, avgLiquid, avgGas, avgPowder, avgSolid, avgColl, avgRB, avgBC, avgBCRB, cellCount, avgParticlesPerCell));
+
+            _accGrid = _accLiquid = _accGas = _accPowder = _accSolid = _accCollisions = _accRB = _accBC = _accBCRB = 0;
+            _profileFrame = 0;
+        }
     }
 
     // -----------------------------------------------------------------------

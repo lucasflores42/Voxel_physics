@@ -9,8 +9,8 @@ public class PowderCalculation : MonoBehaviour
         {
             if (particle.material != MaterialType.Powder) continue;
 
-            Vector3 fi = manager.CalculateGravity(particle.position, particle.mass,
-                                                   particle.rigidBodyId, particles);
+            Vector3 fi = SPHPhysics.CalculateGravity(particle.position, particle.mass,
+                                                   particle.rigidBodyId, particles, SimulationManager.gravityCoef);
             particle.velocity += (fi / particle.mass) * dt;
             particle.position += particle.velocity * dt;
         }

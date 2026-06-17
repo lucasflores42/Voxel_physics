@@ -48,23 +48,24 @@ public class LiquidCalculation : MonoBehaviour
 
                 Vector3 fiPressure = -gradPressure;
                 Vector3 fiViscosity = particle.mass * SimulationManager.liquidViscosityCoef * laplacianVelocity;
-                Vector3 fiGravity = manager.CalculateGravity(particle.position, particle.mass, particle.rigidBodyId, particles);
+                Vector3 fiGravity = SPHPhysics.CalculateGravity(particle.position, particle.mass, particle.rigidBodyId, particles, SimulationManager.gravityCoef);
                 fi = fiPressure + fiViscosity + fiGravity;
             }
 
             if (particle.sph == 0)
             {
-                Vector3 fiGravity = manager.CalculateGravity(particle.position, particle.mass, particle.rigidBodyId, particles);
+                Vector3 fiGravity = SPHPhysics.CalculateGravity(particle.position, particle.mass, particle.rigidBodyId, particles, SimulationManager.gravityCoef);
                 fi = fiGravity;
             }
 
             particle.velocity += (fi / particle.mass) * dt;
             particle.position += particle.velocity * dt;
 
-            // activate SPH calculations (use .y em vez de índice inválido)
-            if (particle.position.y < 4f)
+            // activate SPH calculations (use .y em vez de ï¿½ndice invï¿½lido)
+            if (particle.position.y < 0f)
             {
                 particle.sph = 1;
+                Debug.Log("aaaaa");
             }
             else
             {

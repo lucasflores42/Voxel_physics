@@ -97,8 +97,7 @@ public static class SPHPhysics
     // -------------------------------------------------------------------------
     //  Center of Mass
     // -------------------------------------------------------------------------
-    public static (Vector3 cm, float totalMass) CalculateCenterOfMass(List<Particle> particles,
-                                                                        List<int> indices)
+    public static (Vector3 cm, float totalMass) CalculateCenterOfMass(List<Particle> particles, List<int> indices)
     {
         float totalMass = 0f;
         Vector3 cm = Vector3.zero;

@@ -8,12 +8,6 @@ using System.Collections.Generic;
 
 public class PhysicsManager : MonoBehaviour
 {
-    
-    //  Gravity wrapper (used by material calculators)
-    public Vector3 CalculateGravity(Vector3 position, float mass, int rigidBodyId,
-                                    List<Particle> particles)
-        => SPHPhysics.CalculateGravity(position, mass, rigidBodyId, particles, SimulationManager.gravityCoef);
-
 
     //  Rigid body integration  (translation + rotation via Rodrigues)
     public void UpdateRigidBodies(List<Particle> particles, List<RigidBodyData> rigidbodies)
@@ -21,15 +15,13 @@ public class PhysicsManager : MonoBehaviour
         foreach (RigidBodyData rb in rigidbodies)
         {
             if (rb.id == 1) continue; // skip free particles
-
-            // otimização: não atualizar rigid body se physics == 0 (dormindo/static)
             if (rb.physics == 0) continue;
 
             Vector3 cmOld = rb.centerOfMass;
 
             // --- Translation ---
-            float M = TotalMass(particles, rb);
-            Vector3 fGravity = CalculateGravity(rb.centerOfMass, M, rb.id, particles);
+            float M = rb.totalMass;
+            Vector3 fGravity = SPHPhysics.CalculateGravity(rb.centerOfMass, M, rb.id, particles, SimulationManager.gravityCoef);
             Vector3 a = fGravity / M;
 
             rb.velocity      += a * SimulationManager.dt;
@@ -128,8 +120,8 @@ public class PhysicsManager : MonoBehaviour
 
         Vector3 x1 = p1.position, x2 = p2.position;
         Vector3 v1 = p1.velocity, v2 = p2.velocity;
-        float m1 = TotalMass(particles, rb1);
-        float m2 = TotalMass(particles, rb2);
+        float m1 = rb1.totalMass;
+        float m2 = rb2.totalMass;
 
         Vector3 normal = (x1 - x2) / r;
         float overlap  = p1.radius + p2.radius - r;
@@ -158,7 +150,7 @@ public class PhysicsManager : MonoBehaviour
 
         Vector3 x1 = rbParticle.position, x2 = freeParticle.position;
         Vector3 v1 = rbParticle.velocity, v2 = freeParticle.velocity;
-        float m1 = TotalMass(particles, rb);
+        float m1 = rb.totalMass;
         float m2 = freeParticle.mass;
 
         Vector3 normal = (x1 - x2) / r;
@@ -200,8 +192,8 @@ public class PhysicsManager : MonoBehaviour
     {
         foreach (RigidBodyData rb in rigidbodies)
         {
-            float M = TotalMass(particles, rb);
-            Matrix3x3 invI = SPHPhysics.CalculateInertiaTensor(particles, rb).Inverse();
+            float M = rb.totalMass;
+            Matrix3x3 invI = rb.invInertia;
 
             foreach (int idx in rb.particleIndices)
             {
@@ -256,8 +248,8 @@ public class PhysicsManager : MonoBehaviour
     {
         if (rb.physics == 1)
         {
-            float M = TotalMass(particles, rb);
-            Matrix3x3 invI = SPHPhysics.CalculateInertiaTensor(particles, rb).Inverse();
+            float M = rb.totalMass;
+            Matrix3x3 invI = rb.invInertia;
             Vector3 rRel = contactParticle.position - rb.centerOfMass;
 
             rb.velocity += impulse / M;
